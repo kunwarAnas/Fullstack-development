@@ -1,56 +1,52 @@
-const mongoose = require("mongoose");
-const redis = require("redis");
+const mongoose = require('mongoose');
+const redis = require('redis');
+const util = require('util');
+const keys = require('../config/keys');
 
-const client = redis.createClient();
-client.connect().then();
-
+const client = redis.createClient(keys.redisUrl);
+client.hget = util.promisify(client.hget);
 const exec = mongoose.Query.prototype.exec;
 
-mongoose.Query.prototype.cache = function (options = {}) {
+mongoose.Query.prototype.cache = function(options = {}) {
   this.useCache = true;
-  this.hashKey = JSON.stringify(options.key || "");
+  this.hashKey = JSON.stringify(options.key || '');
+
   return this;
 };
 
-// This is how monkey patch/trick a library
-mongoose.Query.prototype.exec = async function () {
+mongoose.Query.prototype.exec = async function() {
   if (!this.useCache) {
     return exec.apply(this, arguments);
   }
-  // to make a new object not copy
+
   const key = JSON.stringify(
     Object.assign({}, this.getQuery(), {
-      Collection: this.mongooseCollection.name,
+      collection: this.mongooseCollection.name
     })
-  ); // make JSON since redis accept json/string only
+  );
 
-  //  Nested cache structure =   {
-  //     '1234-userID':{
-  //         'query-CollectionName':'Data'
-  //     },
-  //     '12356-userID':{
-  //         'query-CollectionName':'Data'
-  //     }
-  //   }
+  // See if we have a value for 'key' in redis
+  const cacheValue = await client.hget(this.hashKey, key);
 
-  const cachedValue = await client.hGet(this.hashKey, key);
-  if (cachedValue) {
-    console.log("Serving from cache");
-    const doc = JSON.parse(cachedValue);
-    if (Array.isArray(doc)) {
-      return doc.map((d) => new this.model(d));
-    }
+  // If we do, return that
+  if (cacheValue) {
+    const doc = JSON.parse(cacheValue);
 
-    return new this.model(doc);
+    return Array.isArray(doc)
+      ? doc.map(d => new this.model(d))
+      : new this.model(doc);
   }
-  console.log("Serving from DB");
+
+  // Otherwise, issue the query and store the result in redis
   const result = await exec.apply(this, arguments);
-  client.hSet(this.hashKey, key, JSON.stringify(result), "EX", 10);
+
+  client.hset(this.hashKey, key, JSON.stringify(result), 'EX', 10);
+
   return result;
 };
 
 module.exports = {
   clearHash(hashKey) {
-    client.del(JSON.stringify(hashKey))
-  },
+    client.del(JSON.stringify(hashKey));
+  }
 };
