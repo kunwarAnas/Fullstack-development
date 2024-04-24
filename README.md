@@ -20,4 +20,4 @@
 
     -Write (localhost:8080/api/fs/createWrite) POST { "data" : "data you like to add in file"}
 
-    -Copy (localhost:8080/api/fs/copy)
+    -Copy (localhost:8080/api/fs/copy) GET
