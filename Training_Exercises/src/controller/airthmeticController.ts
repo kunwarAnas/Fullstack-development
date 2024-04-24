@@ -5,11 +5,11 @@ type ArithmeticOperation = "add" | "subtract" | "multiply" | "divide" | "percent
 
 const airthmeticOpertions = (req: Request, res: Response) => {
     const { operation } = req.params as { operation: ArithmeticOperation }
-    const { a, b } = req.query;
+    const { a, b } = req.query as { a: string, b: string }
 
     // Convert query parameters to numbers
-    const numA = parseFloat(a as string);
-    const numB = parseFloat(b as string);
+    const numA = parseFloat(a);
+    const numB = parseFloat(b);
 
     if (!(operation in operationMap)) {
         return res.status(400).json({ error: "Invalid operation" });
