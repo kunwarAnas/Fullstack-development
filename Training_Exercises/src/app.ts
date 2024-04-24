@@ -1,5 +1,6 @@
-import express from 'express';
+import express, { json } from 'express';
 import airthmeticRoute from './routes/arithmeticRoute'
+import fsRoute from './routes/fs-task2';
 
 const app = express()
 
@@ -9,7 +10,10 @@ app.listen(PORT, () => {
     console.log(`Server started at port: ${PORT}`)
 })
 
-app.use('/api/calculate',airthmeticRoute)
+app.use(json())
+
+app.use('/api/calculate',airthmeticRoute);
+app.use('/api/fs',fsRoute)
 
 app.use((_, res) => {
     res.status(404).send('Error occured')

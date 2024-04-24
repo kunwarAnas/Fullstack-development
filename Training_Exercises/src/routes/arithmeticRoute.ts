@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import airthmeticOpertions from '../controller/airthmeticController'; 
+import airthmeticOpertions from '../controller/Task1/airthmeticController'; 
 
 const airthmeticRouter: Router = express.Router() // creating mini router
 

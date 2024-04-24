@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import operationMap from '../utils/arithmetic'
+import operationMap from './arithmetic'
 
 type ArithmeticOperation = "add" | "subtract" | "multiply" | "divide" | "percentage";
 
