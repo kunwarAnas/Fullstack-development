@@ -17,6 +17,6 @@
 - Task 2 -> FS module
     -Read (localhost:8080/api/fs/read) GET
 
-    -Write (localhost:8080/api/fs/createWrite) POST
+    -Write (localhost:8080/api/fs/createWrite) POST { "data" : "data you like to add in file"}
 
     -Copy (localhost:8080/api/fs/copy)
