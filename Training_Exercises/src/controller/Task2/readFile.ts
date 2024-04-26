@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { Request, Response } from "express"
+import exceljs from 'exceljs';
 
 export const readFile = (req: Request, res: Response) => {
     try {
@@ -74,4 +75,40 @@ export const createCopy = (req: Request, res: Response) => {
             message: err?.message && err.message
         })
     }
+}
+
+export const createExcel = async (req: Request, res: Response) => {
+
+    try {
+        const jsonData = fs.readFileSync(__dirname + '/data.json', "utf-8");
+
+        const data = JSON.parse(jsonData);
+
+        const workbook = new exceljs.Workbook();
+        const worksheet = workbook.addWorksheet("Data");
+
+        const headers = Object.keys(data[0]);
+        worksheet.addRow(headers);
+
+        data.forEach((item: {
+            [key: string]: string;
+        }) => {
+            const row = headers.map((header) => {
+                return item[header]
+            });
+            worksheet.addRow(row);
+        });
+
+        // Write the workbook to a file
+        const buffer = await workbook.xlsx.writeBuffer()
+
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader("Content-Disposition", "attachment; filename=output.xlsx");
+        res.status(200).send(buffer)
+    } catch (err) {
+        if (err instanceof Error) res.status(500).json({
+            message: err?.message && err.message
+        })
+    }
+
 }
