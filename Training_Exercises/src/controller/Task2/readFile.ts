@@ -57,7 +57,9 @@ export const createCopy = (req: Request, res: Response) => {
             route: '/api/fs/createWrite'
         });
 
-        const fileData = fs.readFileSync(__dirname + '/demo.txt', 'utf-8');
+        const fileData = fs.readFile(__dirname + '/demo.txt', 'utf-8',(err,data)=>{
+            console.log(data)
+        });
 
         let today = new Date().toJSON().slice(0, 10).replace(/-/g, '/')
 
