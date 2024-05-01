@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { DataRecord, MigrationLog } from './DB';
 import fs from 'fs';
 
+
 interface MigrationInfo {
   migrationFileName: string;
   filePathToS3Bucket: string;
@@ -14,15 +15,14 @@ interface MigrationInfo {
   errors: { customer_number: number; error: string }[];
 }
 
+export const migrateData = (_: Request, res: Response) => {
 
-export async function migrateData(req: Request, res: Response) {
+  let buffer: any[] = []
 
   const s3Params = {
     Bucket: 'bucket.myawsbucket',
     Key: 'dummy_migration_data.csv',
   };
-
-  let buffer: any = [];
 
   // const s3 = new S3({
   //   accessKeyId: process.env.accessKeyId,
@@ -49,8 +49,10 @@ export async function migrateData(req: Request, res: Response) {
       res.status(500).send('Internal Server Error');
     });
 
-    stream.pipe(csv()).on('data', (row: any) => {
-      try {
+    stream.pipe(csv()).on('data', async (row: any) => {
+      buffer.push(row)
+    }).on('end', async () => {
+      for (let row of buffer) {
         const {
           source,
           account_number,
@@ -68,71 +70,78 @@ export async function migrateData(req: Request, res: Response) {
           category_of_match,
           attachments
         } = row;
+        try {
+          const dataToUpdate = {
+            source,
+            account_number,
+            first_name: first_name.trim(),
+            last_name: last_name.trim(),
+            customer_number: +customer_number,
+            case_reference: +case_reference,
+            alert_trigger_date,
+            triggered_by_rule: +triggered_by_rule,
+            record_type,
+            notes,
+            senior_analyst_user_id,
+            investigating_analyst_user_id,
+            case_outcome,
+            category_of_match,
+            attachments
+          };
 
-        const dataToUpdate = {
-          source,
-          account_number,
-          first_name: first_name.trim(),
-          last_name: last_name.trim(),
-          customer_number: +customer_number,
-          case_reference: +case_reference,
-          alert_trigger_date,
-          triggered_by_rule: +triggered_by_rule,
-          record_type,
-          notes,
-          senior_analyst_user_id,
-          investigating_analyst_user_id,
-          case_outcome,
-          category_of_match,
-          attachments
-        };
+          const isRecordExist = await DataRecord.findByPk(customer_number)
 
-        buffer.push(row)
+          if (!isRecordExist) {
+            await DataRecord.create(dataToUpdate)
+            migrationInfo.migratedRecords++;
+          } else {
+            await isRecordExist.update(dataToUpdate)
+            migrationInfo.updatedRecords++;
+          }
 
-        //await DataRecord.create(dataToUpdate);
-        migrationInfo.migratedRecords++;
-
-      } catch (error: any) {
-        handleError(error, migrationInfo);
+        } catch (error: any) {
+          handleError(error, customer_number);
+        }
       }
-    }).on('end', async () => {
-      try{
-        const result  = await DataRecord.bulkCreate(buffer, {validate: true})
-      buffer = []
-      console.log(result)
-      logMigrationDetails(migrationInfo);
-      res.status(200).json({
+
+      await logMigrationDetails(migrationInfo);
+
+      return res.status(200).json({
         created: migrationInfo.migratedRecords,
         skipped: migrationInfo.skippedOrErrorRecords,
         updated: migrationInfo.updatedRecords,
       });
-      }catch(err){
-        res.status(500).json({
-          result: err
-        });
-      }
-    });
+    })
+
   } catch (error: any) {
-    console.error('Error accessing S3:', error);
+    console.error('Error accessing S3 or processing CSV:', error);
     res.status(400).send(error.message);
   }
-}
 
-function handleError(error: any, migrationInfo: MigrationInfo) {
-  migrationInfo.skippedOrErrorRecords++;
-  if (error.message !== 'Validation error: First Name cannot be empty') {
-    console.log(error.message)
+
+
+  function handleError(error: any, customer_number: number) {
+    migrationInfo.skippedOrErrorRecords++;
+    migrationInfo.errors.push({ customer_number, error: error.message });
   }
-  migrationInfo.errors.push({ customer_number: error.customer_number, error: error.message });
+
+  async function logMigrationDetails(migrationInfo: MigrationInfo) {
+    await MigrationLog.create({
+      migrationFileName: migrationInfo.migrationFileName,
+      s3FilePath: migrationInfo.filePathToS3Bucket,
+      migrationTriggeredBy: migrationInfo.migrationTriggeredBy,
+      migratedRecords: migrationInfo.migratedRecords,
+      skippedRecords: migrationInfo.skippedOrErrorRecords,
+      errorDetails: migrationInfo.errors,
+    });
+  }
 }
 
-async function logMigrationDetails(migrationInfo: MigrationInfo) {
-  await MigrationLog.create({
-    migrationFileName: migrationInfo.migrationFileName,
-    s3FilePath: migrationInfo.filePathToS3Bucket,
-    migrationTriggeredBy: migrationInfo.migrationTriggeredBy,
-    migratedRecords: migrationInfo.migratedRecords,
-    skippedRecords: migrationInfo.skippedOrErrorRecords,
-    errorDetails: migrationInfo.errors,
-  });
+export const getLogs = async (_: Request, res: Response) => {
+  try {
+    const logsData = await MigrationLog.findAll()
+    res.status(200).json(logsData)
+  } catch (err) {
+    res.status(500).send('Internal Server Error');
+  }
 }
