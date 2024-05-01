@@ -15,6 +15,19 @@ interface MigrationInfo {
   errors: { customer_number: number; error: string }[];
 }
 
+import jwt from 'jsonwebtoken';
+
+// Function to generate JWT token
+export const generateToken = (_: Request, res: Response) => {
+  const payload = {
+    userId: '1234',
+    isAdmin: true 
+  };
+  const token = jwt.sign(payload, `${process.env.JWT_SECRET}`, { expiresIn: '1w' });
+  res.send(token)
+}
+
+
 export const migrateData = (_: Request, res: Response) => {
 
   let buffer: any[] = []
