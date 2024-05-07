@@ -14,6 +14,7 @@ let obj = {
 // console.log(obj, copy);
 
 // custom deep copy
+
 function deepCopy(obj) {
   if (typeof obj !== "object") {
     return "please pass object";
