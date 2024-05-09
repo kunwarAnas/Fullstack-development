@@ -15,7 +15,7 @@ app.listen(PORT, () => {
 
 const connectDB = async () => {
     sequelize.authenticate().then(() => console.log('DB Connected')).catch((err) => console.log(err.message))
-    await sequelize.sync({ force: true });
+   // await sequelize.sync({ force: true });
     console.log('All models were synchronized successfully.');
 }
 
