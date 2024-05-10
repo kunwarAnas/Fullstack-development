@@ -1,7 +1,7 @@
 import express, { json } from 'express';
 import airthmeticRoute from './routes/arithmeticRoute'
 import fsRoute from './routes/fs-task2';
-import task3 from './routes/task3';
+import task from './routes/task';
 import sequelize from './controller/Task3/DB';
 import 'dotenv/config'
 
@@ -25,7 +25,7 @@ app.use(json())
 
 app.use('/api/calculate', airthmeticRoute);
 app.use('/api/fs', fsRoute)
-app.use('/api/task3', task3)
+app.use('/api/task', task)
 
 app.use((_, res) => {
     res.status(404).send('Error occured')
