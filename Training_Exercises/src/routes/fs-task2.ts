@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { readFile, createWriteFile, createCopy, createExcel } from '../controller/Task2/readFile';
+import { readFile, createWriteFile, createCopy, createExcel } from '../Task2/readFile';
 
 const fsRoute: Router = express.Router() // creating mini router
 

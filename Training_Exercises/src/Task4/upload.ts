@@ -59,8 +59,13 @@ export const download = async (req: Request, res: Response) => {
         // Set headers to trigger file download
         res.setHeader('Content-Disposition', `attachment; filename="demoFile.json"`);
         res.setHeader('Content-Type', 'application/octet-stream'); // Set the appropriate content 
-        const fileStream = fs.createReadStream(__dirname + '/demo.json');
-        fileStream.pipe(res);
+
+        if (process.env.env !== 'local') {
+            // S3 download code will go here
+        } else {
+            const fileStream = fs.createReadStream(__dirname + '/demo.json');
+            return fileStream.pipe(res);
+        }
     } catch (err) {
         if (err instanceof Error) res.status(500).json({
             message: err?.message && err.message

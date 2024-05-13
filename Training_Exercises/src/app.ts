@@ -2,7 +2,7 @@ import express, { json } from 'express';
 import airthmeticRoute from './routes/arithmeticRoute'
 import fsRoute from './routes/fs-task2';
 import task from './routes/task';
-import sequelize from './controller/Task3/DB';
+import sequelize from './DB';
 import 'dotenv/config'
 
 const app = express()
@@ -15,7 +15,7 @@ app.listen(PORT, () => {
 
 const connectDB = async () => {
     sequelize.authenticate().then(() => console.log('DB Connected')).catch((err) => console.log(err.message))
-   // await sequelize.sync({ force: true });
+    // await sequelize.sync({ force: true });
     console.log('All models were synchronized successfully.');
 }
 

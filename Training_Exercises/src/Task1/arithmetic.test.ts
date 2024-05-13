@@ -1,4 +1,4 @@
-import operationMap from "../controller/Task1/arithmetic";
+import operationMap from "./arithmetic";
 
 describe('arithmetic Testing...', () => {
   test('add', () => {

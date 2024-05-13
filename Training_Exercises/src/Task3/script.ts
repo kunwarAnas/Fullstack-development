@@ -1,7 +1,7 @@
 import { S3 } from 'aws-sdk';
 import csv from 'csv-parser';
 import { Request, Response } from 'express';
-import { DataRecord, MigrationLog } from './DB';
+import { DataRecord, MigrationLog } from '../DB';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 
