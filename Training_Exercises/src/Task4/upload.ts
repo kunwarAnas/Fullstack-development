@@ -47,10 +47,10 @@ export const uploadToS3 = async (req: _Request, res: Response) => {
 
         } else {
 
-            fs.writeFileSync(__dirname + `${fileName}.json`, JSON.stringify(fileData))
+            fs.writeFileSync(__dirname + `/${fileName}.json`, JSON.stringify(fileData))
 
-            await Task4Records.create({
-                uploaded_by: userId,
+            await Task4Records.upsert({
+                uploaded_by: Number(userId),
                 file_path: process.env.env === 'local' ? `/${fileName}.json` : `${s3Params.Bucket}/${s3Params.Key}`,
                 uploaded_at: new Date().toISOString(),
                 deleted: false
@@ -60,7 +60,7 @@ export const uploadToS3 = async (req: _Request, res: Response) => {
         }
 
     } catch (error: any) {
-        console.error('Error accessing S3 or processing CSV:', error.message);
+        console.error('Error occured', error);
         res.status(400).send(error.message);
     }
 
@@ -78,6 +78,12 @@ export const download = async (req: _Request, res: Response) => {
             Bucket: 'bucket.myawsbucket',
             Key: 'demo.json',
         };
+
+        const isFileDeleted = await Task4Records.findByPk(req?.userId);
+
+        if (isFileDeleted && (<any>isFileDeleted)?.deleted) {
+            return res.status(200).send('File is deleted please re-upload.')
+        }
 
         if (process.env.env !== 'local') {
             const s3 = new S3({
