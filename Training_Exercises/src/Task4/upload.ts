@@ -6,7 +6,7 @@ import { _Request } from '../middleware/auth'
 import { Sequelize } from 'sequelize';
 
 
-export const logout = async (req: Request, res: Response) => {
+export const logout = async (_: Request, res: Response) => {
     res.clearCookie("Token");
     res.send('Logout success')
 }
@@ -15,8 +15,7 @@ export const uploadToS3 = async (req: _Request, res: Response) => {
 
     try {
 
-        const fileData = req.body.fileData;
-        const fileName = req.body.fileName;
+        const { fileData, fileName } = req.body
         const userId = req.userId;
 
         if (!fileData || !fileName) {
@@ -98,8 +97,8 @@ export const download = async (req: _Request, res: Response) => {
 
         await Task4Records.update(
             {
-                downloaded_by: Sequelize.fn('array_append', Sequelize.col('downloaded_by'), req.userId),
-                downloads: Sequelize.literal('downloads + 1')
+                downloaded_by: Sequelize.fn('array_append', Sequelize.col('downloaded_by'), req.userId), // appending userId in downloadedBy Array
+                downloads: Sequelize.literal('downloads + 1') // to increment previous stored
             }
             , {
                 where: { uploaded_by: 123456 }
@@ -123,7 +122,7 @@ export const deleteFile = async (req: _Request, res: Response) => {
                 deleted: true
             }
             , {
-                where: { uploaded_by: userID }
+                where: { uploaded_by: Number(userID) }
             })
 
         res.send('File flagged as deleted')
@@ -135,11 +134,13 @@ export const deleteFile = async (req: _Request, res: Response) => {
     }
 }
 
-export const task4Logs = async (req: _Request, res: Response) => {
+export const task4Logs = async (_: _Request, res: Response) => {
     try {
         const logs = await Task4Records.findAll();
-        res.send(logs)
-    } catch (error: any) {
-        res.send(error.message)
+        res.status(200).json({ success: true, logs })
+    } catch (err) {
+        if (err instanceof Error) res.status(500).json({
+            message: err?.message && err.message
+        })
     }
 }

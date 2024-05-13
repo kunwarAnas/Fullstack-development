@@ -63,7 +63,7 @@ export const DataRecord = sequelize.define('DataRecord', {
 });
 
 export const Task4Records = sequelize.define('Task4Records', {
-  Id: {
+  id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
   },
