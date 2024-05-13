@@ -1,4 +1,5 @@
 import { Sequelize, DataTypes } from 'sequelize'
+import { SequelizeMethod } from 'sequelize/types/utils';
 
 const sequelize = new Sequelize('testing', 'postgres', 'root', {
   host: 'localhost',
@@ -59,6 +60,40 @@ export const DataRecord = sequelize.define('DataRecord', {
   case_outcome: DataTypes.STRING,
   category_of_match: DataTypes.STRING,
   attachments: DataTypes.STRING
+});
+
+export const Task4Records = sequelize.define('Task4Records', {
+  Id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+  },
+  uploaded_by: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+  },
+  file_path: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  uploaded_at: {
+    type: DataTypes.STRING,
+  },
+  downloads: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0
+  },
+  downloaded_by: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: false,
+    defaultValue: []
+  },
+  deleted: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+
 });
 
 

@@ -1,13 +1,23 @@
 import fs from 'fs'
 import { S3 } from 'aws-sdk';
 import { Request, Response } from 'express';
+import { Task4Records } from '../DB';
+import { _Request } from '../middleware/auth'
+import { Sequelize } from 'sequelize';
 
 
-export const uploadToS3 = async (req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response) => {
+    res.clearCookie("Token");
+    res.send('Logout success')
+}
+
+export const uploadToS3 = async (req: _Request, res: Response) => {
 
     try {
+
         const fileData = req.body.fileData;
         const fileName = req.body.fileName;
+        const userId = req.userId;
 
         if (!fileData || !fileName) {
             return res.status(400).json({ error: 'Missing file data or file name' });
@@ -15,13 +25,12 @@ export const uploadToS3 = async (req: Request, res: Response) => {
 
         const s3Params = {
             Bucket: 'bucket.myawsbucket',
-            Key: 'dummy_migration_data.csv',
+            Key: `${fileName}.json`,
             Body: `${JSON.stringify(fileData)}.json`,
         };
 
-        console.log(process.env.env)
-
         if (process.env.env !== 'local') {
+
             const s3 = new S3({
                 accessKeyId: process.env.accessKeyId,
                 secretAccessKey: process.env.secretAccessKey,
@@ -37,38 +46,94 @@ export const uploadToS3 = async (req: Request, res: Response) => {
             });
 
         } else {
-            fs.writeFile(__dirname + '/demo.json', JSON.stringify(fileData), (err) => {
-                if (!err) {
-                    res.status(200).json({
-                        message: 'file create success',
-                        data: fileData
-                    })
-                }
+
+            fs.writeFileSync(__dirname + `${fileName}.json`, JSON.stringify(fileData))
+
+            await Task4Records.create({
+                uploaded_by: userId,
+                file_path: process.env.env === 'local' ? `/${fileName}.json` : `${s3Params.Bucket}/${s3Params.Key}`,
+                uploaded_at: new Date().toISOString(),
+                deleted: false
             })
+
+            res.status(200).send('File upload success');
         }
 
     } catch (error: any) {
-        console.error('Error accessing S3 or processing CSV:', error);
+        console.error('Error accessing S3 or processing CSV:', error.message);
         res.status(400).send(error.message);
     }
 
 }
 
-export const download = async (req: Request, res: Response) => {
+export const download = async (req: _Request, res: Response) => {
     try {
         // Set headers to trigger file download
         res.setHeader('Content-Disposition', `attachment; filename="demoFile.json"`);
         res.setHeader('Content-Type', 'application/octet-stream'); // Set the appropriate content 
 
+        let fileStream: any
+
+        const s3Params = {
+            Bucket: 'bucket.myawsbucket',
+            Key: 'demo.json',
+        };
+
         if (process.env.env !== 'local') {
-            // S3 download code will go here
+            const s3 = new S3({
+                accessKeyId: process.env.accessKeyId,
+                secretAccessKey: process.env.secretAccessKey,
+            });
+
+            fileStream = s3.getObject(s3Params).createReadStream();
         } else {
-            const fileStream = fs.createReadStream(__dirname + '/demo.json');
-            return fileStream.pipe(res);
+            fileStream = fs.createReadStream(__dirname + '/demo.json');
         }
+
+        await Task4Records.update(
+            {
+                downloaded_by: Sequelize.fn('array_append', Sequelize.col('downloaded_by'), req.userId),
+                downloads: Sequelize.literal('downloads + 1')
+            }
+            , {
+                where: { uploaded_by: 123456 }
+            })
+
+        return fileStream.pipe(res);
+
     } catch (err) {
         if (err instanceof Error) res.status(500).json({
             message: err?.message && err.message
         })
+    }
+}
+
+export const deleteFile = async (req: _Request, res: Response) => {
+    try {
+        const userID = req.userId;
+
+        await Task4Records.update(
+            {
+                deleted: true
+            }
+            , {
+                where: { uploaded_by: userID }
+            })
+
+        res.send('File flagged as deleted')
+
+    } catch (err) {
+        if (err instanceof Error) res.status(500).json({
+            message: err?.message && err.message
+        })
+    }
+}
+
+export const task4Logs = async (req: _Request, res: Response) => {
+    try {
+        const logs = await Task4Records.findAll();
+        res.send(logs)
+    } catch (error: any) {
+        res.send(error.message)
     }
 }

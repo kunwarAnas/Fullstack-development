@@ -5,7 +5,6 @@ import { DataRecord, MigrationLog } from '../DB';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 
-
 interface MigrationInfo {
   migrationFileName: string;
   filePathToS3Bucket: string;
@@ -20,10 +19,11 @@ interface MigrationInfo {
 // Function to generate JWT token
 export const generateToken = (_: Request, res: Response) => {
   const payload = {
-    userId: '1234',
+    userId: '123456',
     isAdmin: true
   };
   const token = jwt.sign(payload, `${process.env.JWT_SECRET}`, { expiresIn: '1w' });
+  res.cookie('Token', token, { secure: true })
   res.send(token)
 }
 
