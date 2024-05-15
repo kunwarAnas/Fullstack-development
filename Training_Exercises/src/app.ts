@@ -16,7 +16,6 @@ app.listen(PORT, () => {
 const connectDB = async () => {
     sequelize.authenticate().then(() => console.log('DB Connected')).catch((err) => console.log(err.message))
     //await sequelize.sync({ force: true });
-    console.log('All models were synchronized successfully.');
 }
 
 connectDB()
@@ -28,5 +27,5 @@ app.use('/api/fs', fsRoute)
 app.use('/api/task', task)
 
 app.use((_, res) => {
-    res.status(404).send('Error occured')
+    res.status(404).send('No Route matches error occured')
 })
