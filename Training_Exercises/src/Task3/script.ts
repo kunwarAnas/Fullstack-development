@@ -4,6 +4,8 @@ import { Request, Response } from 'express';
 import { DataRecord, MigrationLog } from '../DB';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
+import { Transform } from 'stream';
+import { pipeline } from 'stream/promises';
 
 interface MigrationInfo {
   migrationFileName: string;
@@ -28,9 +30,7 @@ export const generateToken = (_: Request, res: Response) => {
 }
 
 
-export const migrateData = (_: Request, res: Response) => {
-
-  let buffer: any[] = []
+export const migrateData = async (_: Request, res: Response) => {
 
   const s3Params = {
     Bucket: 'bucket.myawsbucket',
@@ -55,67 +55,19 @@ export const migrateData = (_: Request, res: Response) => {
   try {
     // const stream = s3.getObject(s3Params).createReadStream();
 
-    const stream = fs.createReadStream(__dirname + '/data.csv', 'utf-8')
+    const stream = fs.createReadStream(__dirname + '/data.csv')
 
-    stream.on('error', (err) => {
-      console.error('Error streaming data from S3:', err);
-      res.status(500).send('Internal Server Error');
-    });
-
-    stream.pipe(csv()).on('data', async (row: any) => {
-      buffer.push(row)
-    }).on('end', async () => {
-      for (let row of buffer) {
-        const {
-          source,
-          account_number,
-          first_name,
-          last_name,
-          customer_number,
-          case_reference,
-          alert_trigger_date,
-          triggered_by_rule,
-          record_type,
-          notes,
-          senior_analyst_user_id,
-          investigating_analyst_user_id,
-          case_outcome,
-          category_of_match,
-          attachments
-        } = row;
-        try {
-          const dataToUpdate = {
-            source,
-            account_number,
-            first_name: first_name.trim(),
-            last_name: last_name.trim(),
-            customer_number: +customer_number,
-            case_reference: +case_reference,
-            alert_trigger_date,
-            triggered_by_rule: +triggered_by_rule,
-            record_type,
-            notes,
-            senior_analyst_user_id,
-            investigating_analyst_user_id,
-            case_outcome,
-            category_of_match,
-            attachments
-          };
-
-          const isRecordExist = await DataRecord.findByPk(customer_number)
-
-          if (!isRecordExist) {
-            await DataRecord.create(dataToUpdate)
-            migrationInfo.migratedRecords++;
-          } else {
-            await isRecordExist.update(dataToUpdate)
-            migrationInfo.updatedRecords++;
-          }
-
-        } catch (error: any) {
-          handleError(error, customer_number);
+    const DbStream = new Transform(
+      {
+        objectMode: true,
+        async transform(row, encoding, callBack) {
+          await upsertData(row)
+          callBack(null)
         }
-      }
+      })
+
+    try {
+      await pipeline(stream, csv(), DbStream)
 
       await logMigrationDetails(migrationInfo);
 
@@ -124,18 +76,68 @@ export const migrateData = (_: Request, res: Response) => {
         skipped: migrationInfo.skippedOrErrorRecords,
         updated: migrationInfo.updatedRecords,
       });
-    })
+
+    } catch (err: any) {
+      res.status(500).send(err.message);
+
+    }
 
   } catch (error: any) {
     console.error('Error accessing S3 or processing CSV:', error);
     res.status(400).send(error.message);
   }
 
+  async function upsertData(row: any) {
+    const {
+      source,
+      account_number,
+      first_name,
+      last_name,
+      customer_number,
+      case_reference,
+      alert_trigger_date,
+      triggered_by_rule,
+      record_type,
+      notes,
+      senior_analyst_user_id,
+      investigating_analyst_user_id,
+      case_outcome,
+      category_of_match,
+      attachments
+    } = row;
+    try {
+      const dataToUpdate = {
+        source,
+        account_number,
+        first_name: first_name.trim(),
+        last_name: last_name.trim(),
+        customer_number: +customer_number,
+        case_reference: +case_reference,
+        alert_trigger_date,
+        triggered_by_rule: +triggered_by_rule,
+        record_type,
+        notes,
+        senior_analyst_user_id,
+        investigating_analyst_user_id,
+        case_outcome,
+        category_of_match,
+        attachments
+      };
 
+      const isRecordExist = await DataRecord.findByPk(customer_number)
 
-  function handleError(error: any, customer_number: number) {
-    migrationInfo.skippedOrErrorRecords++;
-    migrationInfo.errors.push({ customer_number, error: error.message });
+      if (!isRecordExist) {
+        await DataRecord.create(dataToUpdate)
+        migrationInfo.migratedRecords++;
+      } else {
+        await isRecordExist.update(dataToUpdate)
+        migrationInfo.updatedRecords++;
+      }
+
+    } catch (error: any) {
+      migrationInfo.skippedOrErrorRecords++;
+      migrationInfo.errors.push({ customer_number, error: error.message });
+    }
   }
 
   async function logMigrationDetails(migrationInfo: MigrationInfo) {

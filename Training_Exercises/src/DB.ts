@@ -1,5 +1,4 @@
-import { Sequelize, DataTypes } from 'sequelize'
-import { SequelizeMethod } from 'sequelize/types/utils';
+import { Sequelize, DataTypes, UUIDV4 } from 'sequelize'
 
 const sequelize = new Sequelize('testing', 'postgres', 'root', {
   host: 'localhost',
@@ -63,10 +62,11 @@ export const DataRecord = sequelize.define('DataRecord', {
 });
 
 export const Task4Records = sequelize.define('Task4Records', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-  },
+  // id: {
+  //   type: DataTypes.INTEGER,
+  //   autoIncrement: true,
+  //   primaryKey: true,
+  // },
   uploaded_by: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -95,6 +95,38 @@ export const Task4Records = sequelize.define('Task4Records', {
   },
 
 });
+
+export const Users = sequelize.define('Users', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  firstName: {
+    type: DataTypes.STRING,
+  },
+  lastName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  profilePicture: {
+    type: DataTypes.STRING,
+    defaultValue: null
+  },
+  Age: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0
+  },
+  emailAddress: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  employment: {
+    type: DataTypes.ENUM('Public', 'Private'),
+    allowNull: false,
+  },
+})
 
 
 export default sequelize
