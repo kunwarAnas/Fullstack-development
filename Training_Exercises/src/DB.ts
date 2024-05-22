@@ -132,5 +132,42 @@ export const Users: any = sequelize.define('Users', {
   },
 })
 
+export const Product = sequelize.define('Product', {
+  name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+  },
+  availability: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+  },
+  price: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+  },
+  inventory: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+  },
+  itemImage: {
+      type: DataTypes.STRING,
+      allowNull: false,
+  },
+  categoryId: {
+      type: DataTypes.INTEGER,
+      references: {
+          model: 'Categories',
+          key: 'id',
+      },
+  },
+});
+
+export const Category = sequelize.define('Category', {
+  name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+  },
+});
+
 
 export default sequelize
