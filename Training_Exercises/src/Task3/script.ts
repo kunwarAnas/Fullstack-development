@@ -87,7 +87,7 @@ export const migrateData = async (_: Request, res: Response) => {
     res.status(400).send(error.message);
   }
 
-  async function upsertData(row: any) {
+  async function upsertData(row: { [key: string]: string | number}) {
     const {
       source,
       account_number,
@@ -105,12 +105,13 @@ export const migrateData = async (_: Request, res: Response) => {
       category_of_match,
       attachments
     } = row;
+    
     try {
       const dataToUpdate = {
         source,
         account_number,
-        first_name: first_name.trim(),
-        last_name: last_name.trim(),
+        first_name: (first_name as string).trim(),
+        last_name: (last_name as string).trim(),
         customer_number: +customer_number,
         case_reference: +case_reference,
         alert_trigger_date,
@@ -136,7 +137,7 @@ export const migrateData = async (_: Request, res: Response) => {
 
     } catch (error: any) {
       migrationInfo.skippedOrErrorRecords++;
-      migrationInfo.errors.push({ customer_number, error: error.message });
+      migrationInfo.errors.push({ customer_number: customer_number as number, error: error.message });
     }
   }
 

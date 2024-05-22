@@ -96,7 +96,7 @@ export const Task4Records = sequelize.define('Task4Records', {
 
 });
 
-export const Users = sequelize.define('Users', {
+export const Users: any = sequelize.define('Users', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -121,6 +121,10 @@ export const Users = sequelize.define('Users', {
   emailAddress: {
     type: DataTypes.STRING,
     allowNull: false,
+  },
+  isVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   },
   employment: {
     type: DataTypes.ENUM('Public', 'Private'),
