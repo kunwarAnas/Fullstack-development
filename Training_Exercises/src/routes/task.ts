@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import { generateToken, getLogs, migrateData } from '../Task3/script'
 import { authenticateAdmin } from '../middleware/auth';
 import { deleteFile, download, logout, task4Logs, uploadToS3 } from '../Task4/upload';
-import authUser from '../Task_ECommerce/userAuth';
+import authUser from '../Tasks_ECommerce/userAuth';
 
 const task: Router = express.Router() // creating a mini router
 

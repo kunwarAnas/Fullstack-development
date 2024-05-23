@@ -158,7 +158,7 @@ export const Product = sequelize.define('Product', {
       references: {
           model: 'Categories',
           key: 'id',
-      },
+      }
   },
 });
 
