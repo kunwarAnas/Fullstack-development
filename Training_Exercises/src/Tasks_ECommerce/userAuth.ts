@@ -11,7 +11,8 @@ import {sendEmail} from './sendEmail'
             age: 20,
             profilePicture: '',
             emailAddress: 'anas@email.com',
-            employment: 'Private'
+            employment: 'Private',
+            isVerified: true
         })
 
         if (user?.id) {
@@ -19,7 +20,7 @@ import {sendEmail} from './sendEmail'
             const verificationUrl = `${process.env.BASE_URL}/auth/verify-email?token=${token}`;
             //sendEmail(verificationUrl, user)
         }
-        console.log('Default user created')
+        console.log('Default user created','anas@email.com')
     } catch (err: any) {
         console.log(err.message)
     }

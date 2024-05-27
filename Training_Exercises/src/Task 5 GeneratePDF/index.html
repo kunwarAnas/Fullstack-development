@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .header, .footer {
+            width: 100%;
+            text-align: center;
+            position: fixed;
+        }
+        .header {
+            top: 0;
+        }
+        .footer {
+            bottom: 0;
+        }
+        .content {
+            margin: 100px 50px 50px 50px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{name}}</h1>
+        <p>{{address}}</p>
+    </div>
+    <div class="content">
+        <table>
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Total Bets</th>
+                    <th>Wins</th>
+                    <th>Loss</th>
+                    <th>Total Bet Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each bets}}
+                <tr>
+                    <td>{{this.month}}</td>
+                    <td>{{this.totalBets}}</td>
+                    <td>{{this.wins}}</td>
+                    <td>{{this.loss}}</td>
+                    <td>{{this.totalBetAmount}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+    <div class="footer">
+        <p>Page <span class="pageNumber"></span> of <span class="totalPages"></span></p>
+    </div>
+</body>
+</html>
