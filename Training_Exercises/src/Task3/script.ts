@@ -1,7 +1,7 @@
 import { S3 } from 'aws-sdk';
 import csv from 'csv-parser';
 import { Request, Response } from 'express';
-import { DataRecord, MigrationLog } from '../DB';
+import { DataRecord, MigrationLog, Users } from '../DB';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import { Transform } from 'stream';
@@ -19,14 +19,22 @@ interface MigrationInfo {
 
 
 // Function to generate JWT token
-export const generateToken = (_: Request, res: Response) => {
+export const generateToken = async (req: Request, res: Response) => {
+  const { userName } = req.body
+  console.log('api hit')
   const payload = {
-    userId: '123456',
+    userId: userName,
     isAdmin: true
   };
+
+  //const user = await Users.findOne({ where: { emailAddress: userName } })
+
+  // if (!user) {
+  //   res.status(400).send('NOT_AUTHORISED')
+  // }
   const token = jwt.sign(payload, `${process.env.JWT_SECRET}`, { expiresIn: '1w' });
   res.cookie('Token', token, { secure: true })
-  res.send(token)
+  res.json({success: true})
 }
 
 
@@ -87,7 +95,7 @@ export const migrateData = async (_: Request, res: Response) => {
     res.status(400).send(error.message);
   }
 
-  async function upsertData(row: { [key: string]: string | number}) {
+  async function upsertData(row: { [key: string]: string | number }) {
     const {
       source,
       account_number,
@@ -105,7 +113,7 @@ export const migrateData = async (_: Request, res: Response) => {
       category_of_match,
       attachments
     } = row;
-    
+
     try {
       const dataToUpdate = {
         source,

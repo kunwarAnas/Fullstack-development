@@ -5,7 +5,24 @@ import fsRoute from './routes/fs-task2';
 import task from './routes/task';
 import sequelize from './DB';
 import TasksECommerceRouter from './routes/EcommerceRoutes'
+import cors from 'cors'
+
 const app = express()
+
+const corsOptions = {
+    origin: true, //included origin as true
+    credentials: true, //included credentials as true
+};
+
+app.use(cors(corsOptions))
+
+
+app.use(function (req, res, next) {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
 
 const PORT = 8080
 

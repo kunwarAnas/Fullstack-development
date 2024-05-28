@@ -7,7 +7,7 @@ import { generatePDF } from '../Task 5 GeneratePDF/generatepdf';
 
 const task: Router = express.Router() // creating a mini router
 
-task.route('/login').get(generateToken)
+task.route('/login').post(generateToken)
 task.route('/logout').get(logout)
 
 // TASK 3
