@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+:root {
+    color-scheme: dark;
+    accent-color: var(--native-dark-accent-color);
+}
