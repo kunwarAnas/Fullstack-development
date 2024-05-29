@@ -3,23 +3,27 @@ import React from "react";
 import { useRouter } from "next/navigation";
 
 const Login = () => {
-  const [email, setEmail] = React.useState("");
+  const [name, setName] = React.useState("");
+  const [img, setImg] = React.useState("");
   const router = useRouter();
 
-  const formAction = async (formData: any) => {
+  const formAction = async () => {
     try {
-    //   const response = await fetch("http://localhost:8080/api/task/login", {
-    //     method: "POST",
-    //     credentials: "include",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify({
-    //       userName: email,
-    //     }),
-    //   });
+      const response = await fetch("http://localhost:8080/api/Ecommerce/category/create", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          img
+        }),
+        cache:'no-cache'
+      });
       router.push("/");
     } catch (err: any) {
+      router.push("/login");
       console.log(err.message);
     }
   };
@@ -32,11 +36,13 @@ const Login = () => {
           className="border p-1"
           placeholder="Name"
           type="text"
+          onChange={(e)=> setName(e.target.value)}
         />
         <input
           className="border p-1"
           placeholder="image"
           type="text"
+          onChange={(e)=> setImg(e.target.value)}
         />
         <button className="border px-6" onClick={formAction}>
           Add

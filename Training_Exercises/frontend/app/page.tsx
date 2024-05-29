@@ -1,11 +1,54 @@
 "use client"
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Card from "../components/card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const page = () => {
+const Page = () => {
   const router = useRouter();
+  const [category , setCategory] = useState([])
+
+  const fetchCategory = async () =>{
+    try {
+      const response = await (await fetch("http://localhost:8080/api/Ecommerce/category/all", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: 'no-cache'
+      })).json();
+      if(response.status === 401){
+        return router.push("/login");
+      }
+      setCategory(response)
+    } catch (err: any) {
+      router.push("/login");
+      console.log(err);
+    }
+  }
+
+  const logout = async () =>{
+    try {
+      await fetch("http://localhost:8080/api/task/logout", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache:'no-cache'
+      });
+      setCategory([])
+      router.push("/login");
+    } catch (err: any) {
+      router.push("/login");
+      console.log(err.message);
+    }
+  }
+
+  useEffect(()=>{
+    fetchCategory()
+  },[])
 
   const items = [
     {
@@ -30,6 +73,7 @@ const page = () => {
     },
     
   ];
+
   return (
     <>
       <div className="bg-[#282626] flex justify-between items-center">
@@ -41,11 +85,12 @@ const page = () => {
           <Link href="/account">
             <span className="text-2xl p-4">Account</span>
           </Link>
+            <span className="text-2xl p-4" onClick={logout}>Logout</span>
         </div>
       </div>
       <div className="flex flex-wrap justify-center mt-6" >
-        {items.map((item) => (
-          <Card key={item.id} item={item} />
+        { Array.isArray(category) && category?.map((item: any) => (
+          <Card key={item?.id} item={item} />
         ))}
         <div className="h-[260px] w-[240px] p-1 m-4 flex justify-center items-center">
           <button
@@ -60,4 +105,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
