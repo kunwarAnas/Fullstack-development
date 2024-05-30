@@ -10,7 +10,7 @@ export async function authenticateAdmin(req: _Request, res: Response, next: Next
   const token = req.header('Authorization') || req.headers.cookie?.split('Token=')[1]
 
   if (!token) {
-    return res.status(401).json({ message: 'Access denied. No token provided.' });
+    return res.status(401).json({ message: 'Access denied. No token provided.', status: 401 });
   }
 
   try {

@@ -4,13 +4,23 @@ import { Category } from '../DB'
 
 export const createCategory = async (req: Request, res: Response) => {
     try {
-        const { name } = req.body
-        const category = await Category.create({ name });
+        const { name, img } = req.body
+        const category = await Category.create({ name, img });
         res.status(201).json(category);
     } catch (error) {
         error instanceof Error && res.status(500).json({ error: error.message });
     }
 };
+
+export const getCategory = async (_: Request, res: Response) => {
+    try {
+        const category = await Category.findAll();
+        res.status(201).json(category);
+    } catch (error) {
+        error instanceof Error && res.status(500).json({ error: error.message });
+    }
+};
+
 
 export const updateCategory = async (req: Request, res: Response) => {
     try {

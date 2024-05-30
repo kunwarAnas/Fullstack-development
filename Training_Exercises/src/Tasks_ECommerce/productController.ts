@@ -1,5 +1,28 @@
 import { Request, Response } from 'express';
-import { Product } from '../DB';
+import { Category, Product } from '../DB';
+
+export const getProduct = async (req: Request, res: Response) => {
+    try {
+        const { category } = req.query
+        console.log(category)
+        if (!category) {
+            res.status(500).json({ error: 'category not found' });
+        }
+        const products = await Category.findOne({
+            where: {
+                name: category
+            },
+            include: [{
+                model: Product,
+            }]
+        });
+        console.log(products)
+        res.status(200).json(products);
+    } catch (error) {
+        console.log(error)
+        error instanceof Error && res.status(500).json({ error: error.message });
+    }
+};
 
 export const createProduct = async (req: Request, res: Response) => {
     try {

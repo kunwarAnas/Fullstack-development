@@ -154,19 +154,27 @@ export const Product = sequelize.define('Product', {
     allowNull: false,
   },
   categoryId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     references: {
       model: 'Categories',
-      key: 'id',
+      key: 'name',
     }
   },
 });
 
 export const Category = sequelize.define('Category', {
+  // id: {
+  //   type: DataTypes.INTEGER,
+  //   autoIncrement: true,
+  // },
   name: {
     type: DataTypes.STRING,
+    primaryKey: true,
     allowNull: false,
   },
+  img: {
+    type: DataTypes.STRING,
+  }
 });
 
 Category.hasMany(Product, { foreignKey: 'categoryId' });
