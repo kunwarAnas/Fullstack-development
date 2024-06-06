@@ -4,6 +4,7 @@ import Card from "@/components/card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import { json } from "stream/consumers";
 
 const Product = () => {
   const router = useRouter();
@@ -41,28 +42,28 @@ const Product = () => {
     fetchProduct();
   }, []);
 
-  const items = [
-    {
-      id: 1,
-      name: "Electronic",
-      img: "electronic",
-    },
-    {
-      id: 2,
-      name: "Toys",
-      img: "toys",
-    },
-    {
-      id: 3,
-      name: "Home Decor",
-      img: "Home_Decor",
-    },
-    {
-      id: 4,
-      name: "Cloths",
-      img: "Cloths",
-    },
-  ];
+  // const items = [
+  //   {
+  //     id: 1,
+  //     name: "Electronic",
+  //     img: "electronic",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Toys",
+  //     img: "toys",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Home Decor",
+  //     img: "Home_Decor",
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Cloths",
+  //     img: "Cloths",
+  //   },
+  // ];
   return (
     <>
       <div className="bg-[#282626] flex justify-between items-center">
@@ -84,8 +85,16 @@ const Product = () => {
               item={item}
               route={"product"}
               handleCart={(item: any) => {
+                const index = cart.findIndex((c) => c.name === item.name);
+                console.log(index);
+                if (index != -1) {
+                  cart[index]["count"]++;
+                  return localStorage.setItem("cart", JSON.stringify(cart));
+                }
+                item["count"] = 1;
+                console.log(item);
                 setCart([...cart, item]);
-                console.log(cart);
+                localStorage.setItem("cart", JSON.stringify(cart));
               }}
             />
           ))}

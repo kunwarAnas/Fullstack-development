@@ -1,7 +1,6 @@
 "use client";
 import React, { useContext } from "react";
 import { useRouter } from "next/navigation";
-import cartContext from "@/app/cartContext";
 
 const Card = ({ item, route = '', handleCart }: any) => {
   const router = useRouter();

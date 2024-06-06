@@ -9,18 +9,21 @@ const Login = () => {
 
   const formAction = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/Ecommerce/category/create", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          img
-        }),
-        cache:'no-cache'
-      });
+      const response = await fetch(
+        "http://localhost:8080/api/Ecommerce/category/create",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            img,
+          }),
+          cache: "no-cache",
+        }
+      );
       router.push("/");
     } catch (err: any) {
       router.push("/login");
@@ -34,15 +37,15 @@ const Login = () => {
       <div className="h-[20rem] w-[40rem] flex justify-center items-center flex-col gap-6 border-2 border-dashed">
         <input
           className="border p-1"
-          placeholder="Name"
+          placeholder="Category Name"
           type="text"
-          onChange={(e)=> setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
         <input
           className="border p-1"
-          placeholder="image"
+          placeholder="Image URL"
           type="text"
-          onChange={(e)=> setImg(e.target.value)}
+          onChange={(e) => setImg(e.target.value)}
         />
         <button className="border px-6" onClick={formAction}>
           Add
